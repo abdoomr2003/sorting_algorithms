@@ -1,51 +1,64 @@
-/*
- * File: 100-shell_sort.c
- */
-
 #include "sort.h"
 
-/**
- * swap_ints - Swap two integers in an array.
- * @a: The first integer to swap.
- * @b: The second integer to swap.
- */
-void swap_ints(int *a, int *b)
-{
-	int tmp;
 
-	tmp = *a;
+/**
+ * swap - swaps two integers in an array
+ * @a: first number
+ * @b: second number
+ */
+void swap(int *a, int *b)
+{
+	int tmp = *a;
+
 	*a = *b;
 	*b = tmp;
 }
 
 /**
- * shell_sort - Sort an array of integers in ascending
- *              order using the shell sort algorithm.
- * @array: An array of integers.
- * @size: The size of the array.
- *
- * Description: Uses the Knuth interval sequence.
+ * shell_sort - an implementation of shell sort with the
+ * knuth
+ * @array: the array to be sorted
+ * @size: the size of the array
  */
 void shell_sort(int *array, size_t size)
 {
-	size_t gap, i, j;
+	int k, z;
+	size_t gap = 1, i, j;
 
-	if (array == NULL || size < 2)
+	if (size <= 1 || !array)
 		return;
+	/*find the maximum amount of divider*/
+	while (gap <= size)
+		gap = gap * 3 + 1;/*knuth sequence*/
 
-	for (gap = 1; gap < (size / 3);)
-		gap = gap * 3 + 1;
-
-	for (; gap >= 1; gap /= 3)
+	while (gap > 0)
 	{
-		for (i = gap; i < size; i++)
+		gap = (gap - 1) / 3;/*knuth sequence*/
+		if (gap < 1)
+			break;
+		/*find and sort all the elments with the @gap intevral*/
+		j = 0;
+		while (j < gap)
 		{
-			j = i;
-			while (j >= gap && array[j - gap] > array[j])
+			i = j;
+			while (i < size)
 			{
-				swap_ints(array + j, array + (j - gap));
-				j -= gap;
+				k = i - gap, z = i;
+				/*
+				 * take current element and put it in its right place in
+				 * the subgroup
+				 */
+				while (k >= 0)
+				{
+					if (array[z] > array[k])
+						break;
+					swap(array + z, array + k);
+					z = k;
+					k -= gap;
+				}
+				i += gap;
 			}
+			j++;
 		}
 		print_array(array, size);
 	}

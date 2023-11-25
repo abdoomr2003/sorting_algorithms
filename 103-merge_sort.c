@@ -1,86 +1,83 @@
-/*
- * File: 103-merge_sort.c
- */
-
 #include "sort.h"
 
-void merge_subarr(int *subarr, int *buff, size_t front, size_t mid,
-		size_t back);
-void merge_sort_recursive(int *subarr, int *buff, size_t front, size_t back);
-void merge_sort(int *array, size_t size);
+/**
+* print_elements - prints elements in array in given format
+* @array: the array to be printed
+* @size: the size of the array
+*/
+void print_elements(int *array, size_t size)
+{
+	size_t i = 0;
+
+	while (i < size - 1)
+		printf("%i, ", array[i]), i += 1;
+	printf("%i\n", array[i]);
+}
 
 /**
- * merge_subarr - Sort a subarray of integers.
- * @subarr: A subarray of an array of integers to sort.
- * @buff: A buffer to store the sorted subarray.
- * @front: The front index of the array.
- * @mid: The middle index of the array.
- * @back: The back index of the array.
- */
-void merge_subarr(int *subarr, int *buff, size_t front, size_t mid,
-		size_t back)
+* merge_sort_rec - a recursive merging algorithm
+* one working array is utilized
+* and most of the calculation (the dividing) is done
+* on the actual array
+* @array: the array to be sorted
+* @working_array: an array of equal size to array for
+* temp work.
+* @size: size of the arrays
+* Return: the size of the array sorted
+*/
+size_t merge_sort_rec(int *array, int *working_array, size_t size)
 {
-	size_t i, j, k = 0;
+	size_t left, right;
+	size_t i = 0, j = 0, k = 0;
+	size_t half = (size_t)(size / 2);
 
-	printf("Merging...\n[left]: ");
-	print_array(subarr + front, mid - front);
+	if (size <= 1)
+		return (size);
 
+	/*sort each half*/
+	left = merge_sort_rec(array, working_array, half);
+	right = merge_sort_rec(array + half, working_array + half, size - half);
+
+	/*merge each half*/
+	printf("Merging...\n");
+	printf("[left]: ");
+	print_elements(array, left);
 	printf("[right]: ");
-	print_array(subarr + mid, back - mid);
+	print_elements(array + left, right);
 
-	for (i = front, j = mid; i < mid && j < back; k++)
-		buff[k] = (subarr[i] < subarr[j]) ? subarr[i++] : subarr[j++];
-	for (; i < mid; i++)
-		buff[k++] = subarr[i];
-	for (; j < back; j++)
-		buff[k++] = subarr[j];
-	for (i = front, k = 0; i < back; i++)
-		subarr[i] = buff[k++];
-
-	printf("[Done]: ");
-	print_array(subarr + front, back - front);
-}
-
-/**
- * merge_sort_recursive - Implement the merge sort algorithm through recursion.
- * @subarr: A subarray of an array of integers to sort.
- * @buff: A buffer to store the sorted result.
- * @front: The front index of the subarray.
- * @back: The back index of the subarray.
- */
-void merge_sort_recursive(int *subarr, int *buff, size_t front, size_t back)
-{
-	size_t mid;
-
-	if (back - front > 1)
+	for (k = i, j = left; i < left && j < left + right; k++)
 	{
-		mid = front + (back - front) / 2;
-		merge_sort_recursive(subarr, buff, front, mid);
-		merge_sort_recursive(subarr, buff, mid, back);
-		merge_subarr(subarr, buff, front, mid, back);
+		if (array[i] > array[j])
+			working_array[k] = array[j], j += 1;
+		else
+			working_array[k] = array[i], i += 1;
 	}
+	for ( ; i < left; i++, k++)
+		working_array[k] = array[i];
+
+	for ( ; j < left + right; j++, k++)
+		working_array[k] = array[j];
+
+	/*copy the changes back to the main array*/
+	for (k = 0; k < right + left; k++)
+		array[k] = working_array[k];
+	printf("[Done]: ");
+	print_elements(array, right + left);
+	return (left + right);
 }
 
 /**
- * merge_sort - Sort an array of integers in ascending
- *              order using the merge sort algorithm.
- * @array: An array of integers.
- * @size: The size of the array.
- *
- * Description: Implements the top-down merge sort algorithm.
- */
+* merge_sort - an implementation of merge sort algorithm
+* @array: the array to be sorted
+* @size: the size of the array
+*/
 void merge_sort(int *array, size_t size)
 {
-	int *buff;
+	int *work_ar = malloc(sizeof(int) * size);
 
-	if (array == NULL || size < 2)
+	if (!work_ar)
 		return;
 
-	buff = malloc(sizeof(int) * size);
-	if (buff == NULL)
-		return;
-
-	merge_sort_recursive(array, buff, 0, size);
-
-	free(buff);
+	merge_sort_rec(array, work_ar, size);
+	free(work_ar);
 }

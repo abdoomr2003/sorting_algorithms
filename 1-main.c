@@ -48,7 +48,7 @@ int main(void)
     if (!list)
         return (1);
     print_list(list);
-    printf("\n");
+    printf("\n this \n");
     insertion_sort_list(&list);
     printf("\n");
     print_list(list);

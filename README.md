@@ -1,2 +1,2 @@
-# sorting_algorithms
-ls
+** Sorting Algorithms **
+-> bubble sort algorithm

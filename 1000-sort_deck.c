@@ -1,145 +1,128 @@
-/*
- * File: 1000-sort_deck.c
- */
-
 #include "deck.h"
 
-int _strcmp(const char *s1, const char *s2);
-char get_value(deck_node_t *card);
-void insertion_sort_deck_kind(deck_node_t **deck);
-void insertion_sort_deck_value(deck_node_t **deck);
-void sort_deck(deck_node_t **deck);
 
 /**
- * _strcmp - Compares two strings.
- * @s1: The first string to be compared.
- * @s2: The second string to be compared.
- *
- * Return: Positive byte difference if s1 > s2
- *         0 if s1 == s2
- *         Negative byte difference if s1 < s2
+ * cmpDeckNode - compares two deck nodes
+ * @c1: deck node one
+ * @c2: deck node two
+ * Return: 1 if c1 is biigger, 0 if are equal and -1 if c2 is bigger
  */
-int _strcmp(const char *s1, const char *s2)
+int cmpDeckNode(deck_node_t *c1, deck_node_t *c2)
 {
-	while (*s1 && *s2 && *s1 == *s2)
-	{
-		s1++;
-		s2++;
-	}
+	int c1Value, c2Value;
 
-	if (*s1 != *s2)
-		return (*s1 - *s2);
+	/*compare with kind*/
+	if (c1->card->kind > c2->card->kind)
+		return (1);
+	if (c1->card->kind < c2->card->kind)
+		return (-1);
+
+	/*if kind is simillar extract value*/
+	if (!strcmp(c1->card->value, "Jack"))
+		c1Value = 11;
+	else if (!strcmp(c1->card->value, "Queen"))
+		c1Value = 12;
+	else if (!strcmp(c1->card->value, "King"))
+		c1Value = 13;
+	else if (!strcmp(c1->card->value, "Ace"))
+		c1Value = 0;
+	else
+		c1Value = atoi(c1->card->value);
+
+	if (!strcmp(c2->card->value, "Jack"))
+		c2Value = 11;
+	else if (!strcmp(c2->card->value, "Queen"))
+		c2Value = 12;
+	else if (!strcmp(c2->card->value, "King"))
+		c2Value = 13;
+	else if (!strcmp(c2->card->value, "Ace"))
+		c2Value = 0;
+	else
+		c2Value = atoi(c2->card->value);
+
+	/*compare value*/
+	if (c1Value > c2Value)
+		return (1);
+	if (c1Value < c2Value)
+		return (-1);
 	return (0);
 }
 
 /**
- * get_value - Get the numerical value of a card.
- * @card: A pointer to a deck_node_t card.
- *
- * Return: The numerical value of the card.
+ * swapnext - swaps a node with the next node in a doubly linked list
+ * @current: the current node
+ * @head: head of the doubly linked list
  */
-char get_value(deck_node_t *card)
+void swapnext(deck_node_t *current, deck_node_t **head)
 {
-	if (_strcmp(card->card->value, "Ace") == 0)
-		return (0);
-	if (_strcmp(card->card->value, "1") == 0)
-		return (1);
-	if (_strcmp(card->card->value, "2") == 0)
-		return (2);
-	if (_strcmp(card->card->value, "3") == 0)
-		return (3);
-	if (_strcmp(card->card->value, "4") == 0)
-		return (4);
-	if (_strcmp(card->card->value, "5") == 0)
-		return (5);
-	if (_strcmp(card->card->value, "6") == 0)
-		return (6);
-	if (_strcmp(card->card->value, "7") == 0)
-		return (7);
-	if (_strcmp(card->card->value, "8") == 0)
-		return (8);
-	if (_strcmp(card->card->value, "9") == 0)
-		return (9);
-	if (_strcmp(card->card->value, "10") == 0)
-		return (10);
-	if (_strcmp(card->card->value, "Jack") == 0)
-		return (11);
-	if (_strcmp(card->card->value, "Queen") == 0)
-		return (12);
-	return (13);
+	deck_node_t *tmp = NULL;
+
+	tmp = current->next;
+	if (tmp->next)
+		tmp->next->prev = current;
+	if (current->prev)
+		current->prev->next = tmp;
+	else
+		*head = current;
+	current->next = current->next->next;
+	tmp->prev = current->prev;
+	tmp->next = current;
+	current->prev = tmp;
 }
 
 /**
- * insertion_sort_deck_kind - Sort a deck of cards from spades to diamonds.
- * @deck: A pointer to the head of a deck_node_t doubly-linked list.
+ * swapprev - swaps node with the previous node in doubly linked list
+ * @current: the current node
+ * @head: head of the doubly linked list
  */
-void insertion_sort_deck_kind(deck_node_t **deck)
+void swapprev(deck_node_t *current, deck_node_t **head)
 {
-	deck_node_t *iter, *insert, *tmp;
+	deck_node_t *tmp = NULL;
 
-	for (iter = (*deck)->next; iter != NULL; iter = tmp)
-	{
-		tmp = iter->next;
-		insert = iter->prev;
-		while (insert != NULL && insert->card->kind > iter->card->kind)
-		{
-			insert->next = iter->next;
-			if (iter->next != NULL)
-				iter->next->prev = insert;
-			iter->prev = insert->prev;
-			iter->next = insert;
-			if (insert->prev != NULL)
-				insert->prev->next = iter;
-			else
-				*deck = iter;
-			insert->prev = iter;
-			insert = iter->prev;
-		}
-	}
+	tmp = current->prev;
+	if (current->next)
+		current->next->prev = tmp;
+	if (tmp->prev)
+		tmp->prev->next = current;
+	else
+		*head = current;
+
+	current->prev = current->prev->prev;
+	tmp->next = current->next;
+	tmp->prev = current;
+	current->next = tmp;
 }
 
 /**
- * insertion_sort_deck_value - Sort a deck of cards sorted from
- *                             spades to diamonds from ace to king.
- * @deck: A pointer to the head of a deck_node_t doubly-linked list.
+ * sort_deck - sorts a deck
+ * @list: a pointer to the head of the dead to be
+ *       sorted
  */
-void insertion_sort_deck_value(deck_node_t **deck)
+void sort_deck(deck_node_t **list)
 {
-	deck_node_t *iter, *insert, *tmp;
+	bool swaped = true;
+	deck_node_t *current = *list;
 
-	for (iter = (*deck)->next; iter != NULL; iter = tmp)
-	{
-		tmp = iter->next;
-		insert = iter->prev;
-		while (insert != NULL &&
-		       insert->card->kind == iter->card->kind &&
-		       get_value(insert) > get_value(iter))
-		{
-			insert->next = iter->next;
-			if (iter->next != NULL)
-				iter->next->prev = insert;
-			iter->prev = insert->prev;
-			iter->next = insert;
-			if (insert->prev != NULL)
-				insert->prev->next = iter;
-			else
-				*deck = iter;
-			insert->prev = iter;
-			insert = iter->prev;
-		}
-	}
-}
-
-/**
- * sort_deck - Sort a deck of cards from ace to king and
- *             from spades to diamonds.
- * @deck: A pointer to the head of a deck_node_t doubly-linked list.
- */
-void sort_deck(deck_node_t **deck)
-{
-	if (deck == NULL || *deck == NULL || (*deck)->next == NULL)
+	if (!current)
 		return;
-
-	insertion_sort_deck_kind(deck);
-	insertion_sort_deck_value(deck);
+	while (swaped)
+	{
+		swaped = false;
+		while (current->next)
+		{
+			if (cmpDeckNode(current, current->next) == 1)
+				swapnext(current, list), swaped = true;
+			else
+				current = current->next;
+		}
+		while (current->prev)
+		{
+			if (cmpDeckNode(current, current->prev) == -1)
+				swapprev(current, list), swaped = true;
+			else
+				current = current->prev;
+		}
+		if (!swaped)
+			return;
+	}
 }
